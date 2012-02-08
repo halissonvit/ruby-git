@@ -345,7 +345,7 @@ module Git
 
     # returns an array of all Git::Tag objects for this repository
     def tags
-      self.lib.tags.map { |r| tag(r) }
+      tags.map { |r| tag(r) }
     end
     
     # returns a Git::Tag object
@@ -354,8 +354,8 @@ module Git
     end
 
     # creates a new git tag (Git::Tag)
-    def add_tag(tag_name)
-      self.lib.tag(tag_name)
+    def add_tag(tag_name, opts={})
+      self.lib.tag(tag_name, opts)
       tag(tag_name)
     end
     
@@ -471,6 +471,10 @@ module Git
     # returns the name of the branch the working directory is currently on
     def current_branch
       self.lib.branch_current
+    end
+    
+    def command(cmd)
+      self.lib.command_lines(cmd)
     end
 
     
