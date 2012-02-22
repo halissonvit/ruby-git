@@ -558,7 +558,7 @@ module Git
     end
 
     def pull(remote='origin', branch='master')
-      command('pull'[remote,branch])  
+      command('pull',[remote,branch])  
     end
     
     def fetch(remote)
