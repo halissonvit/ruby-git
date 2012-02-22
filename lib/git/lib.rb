@@ -669,6 +669,9 @@ module Git
              (current_version[3] ? current_version[3] >= required_version[3] : true)
     end
 
+    def git_command(cmd)
+      self.command_lines(cmd)
+    end
 
     private
     

@@ -474,7 +474,7 @@ module Git
     end
     
     def command(cmd)
-      self.lib.command_lines(cmd)
+      self.lib.git_command(cmd)
     end
 
     
