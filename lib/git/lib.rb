@@ -671,7 +671,7 @@ module Git
 
     def git_command(cmd)
       puts "here"
-      self.command_lines(cmd)
+      command_lines(cmd)
     end
 
     private
