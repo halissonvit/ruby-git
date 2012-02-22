@@ -670,15 +670,16 @@ module Git
     end
 
     def git_command(cmd)
-      puts "here"
+      puts "lkjdflkasdl"
       command_lines(cmd)
     end
 
-    private
+    
     
     def command_lines(cmd, opts = [], chdir = true, redirect = '')
       command(cmd, opts, chdir).split("\n")
     end
+    private
     
     def command(cmd, opts = [], chdir = true, redirect = '', &block)
       ENV['GIT_DIR'] = @git_dir
