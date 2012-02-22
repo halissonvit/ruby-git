@@ -321,8 +321,9 @@ module Git
 
     # fetches a branch from a remote and merges it into the current working branch
     def pull(remote = 'origin', branch = 'master', message = 'origin pull')
-      fetch(remote)
-      merge(branch, message)
+      pull(remote, branch)
+      # fetch(remote)
+      # merge(branch, message)
     end
     
     # returns an array of Git:Remote objects
