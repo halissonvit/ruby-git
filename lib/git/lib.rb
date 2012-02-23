@@ -686,11 +686,11 @@ module Git
       git_transaction do 
         path = @git_work_dir || @git_dir || @path
         
+        out = nil
         git_environment(@git_dir, @git_index_file, @git_work_dir) do
           opts = [opts].flatten.map {|s| escape(s) }.join(' ')
           git_cmd = "git #{cmd} #{opts} #{redirect} 2>&1"
           
-          out = nil
           if chdir && (Dir.getwd != path)
             Dir.chdir(path) { out = run_command(git_cmd, &block) } 
           else
