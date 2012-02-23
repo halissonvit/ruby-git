@@ -683,31 +683,32 @@ module Git
     end
     
     def command(cmd, opts = [], chdir = true, redirect = '', &block)
-      ENV['GIT_DIR'] = @git_dir
-      ENV['GIT_INDEX_FILE'] = @git_index_file
-      ENV['GIT_WORK_TREE'] = @git_work_dir
-      path = @git_work_dir || @git_dir || @path
-
-      opts = [opts].flatten.map {|s| escape(s) }.join(' ')
-      git_cmd = "git #{cmd} #{opts} #{redirect} 2>&1"
-
-      out = nil
-      if chdir && (Dir.getwd != path)
-        Dir.chdir(path) { out = run_command(git_cmd, &block) } 
-      else
-        out = run_command(git_cmd, &block)
-      end
-      
-      if @logger
-        @logger.info(git_cmd)
-        @logger.debug(out)
-      end
-            
-      if $?.exitstatus > 0
-        if $?.exitstatus == 1 && out == ''
-          return ''
+      git_transaction do 
+        path = @git_work_dir || @git_dir || @path
+        
+        git_environment(@git_dir, @git_index_file, @git_work_dir) do
+          opts = [opts].flatten.map {|s| escape(s) }.join(' ')
+          git_cmd = "git #{cmd} #{opts} #{redirect} 2>&1"
+          
+          out = nil
+          if chdir && (Dir.getwd != path)
+            Dir.chdir(path) { out = run_command(git_cmd, &block) } 
+          else
+            out = run_command(git_cmd, &block)
+          end
         end
-        raise Git::GitExecuteError.new(git_cmd + ':' + out.to_s) 
+        
+        if @logger
+          @logger.info(git_cmd)
+          @logger.debug(out)
+        end
+              
+        if $?.exitstatus > 0
+          if $?.exitstatus == 1 && out == ''
+            return ''
+          end
+          raise Git::GitExecuteError.new(git_cmd + ':' + out.to_s) 
+        end
       end
       out
     end
@@ -723,6 +724,35 @@ module Git
     def escape(s)
       escaped = s.to_s.gsub('\'', '\'\\\'\'')
       %Q{"#{escaped}"}
+    end
+    
+    def git_environment(git_dir, git_index_file, git_work_tree)
+      hold_git_dir = ENV['GIT_DIR'] 
+      hold_git_index_file = ENV['GIT_INDEX_FILE']
+      hold_git_work_dir = ENV['GIT_WORK_TREE']
+      ENV['GIT_DIR'] = @git_dir
+      ENV['GIT_INDEX_FILE'] = @git_index_file
+      ENV['GIT_WORK_TREE'] = @git_work_dir
+      yield
+      ENV['GIT_DIR'] = hold_git_dir
+      ENV['GIT_INDEX_FILE'] = hold_git_index_file
+      ENV['GIT_WORK_TREE'] = hold_git_work_dir
+    end
+    
+    def git_transaction
+      try_count = 0
+      begin
+        try_count+=1
+        yield
+      rescue => error
+        if error.message.include? 'ssh_exchange_identification'
+          retry unless try_count >= 10
+        elsif error.message.include? "master.lock': File exists."
+          retry unless try_count >= 3
+        else
+          raise error
+        end
+      end
     end
 
   end
