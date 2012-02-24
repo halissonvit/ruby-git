@@ -684,31 +684,30 @@ module Git
     
     def command(cmd, opts = [], chdir = true, redirect = '', &block)
       out = nil
-      git_transaction do 
-        path = @git_work_dir || @git_dir || @path
-    
-        git_environment(@git_dir, @git_index_file, @git_work_dir) do
-          opts = [opts].flatten.map {|s| escape(s) }.join(' ')
-          git_cmd = "git #{cmd} #{opts} #{redirect} 2>&1"
-          
-          if chdir && (Dir.getwd != path)
-            Dir.chdir(path) { out = run_command(git_cmd, &block) } 
-          else
-            out = run_command(git_cmd, &block)
-          end
-        end
+      git_cmd = nil
+      path = @git_work_dir || @git_dir || @path
+      
+      opts = [opts].flatten.map {|s| escape(s) }.join(' ')
+      git_cmd = "git #{cmd} #{opts} #{redirect} 2>&1"
         
-        if @logger
-          @logger.info(git_cmd)
-          @logger.debug(out)
+      git_environment(@git_dir, @git_index_file, @git_work_dir) do
+        if chdir && (Dir.getwd != path)
+          Dir.chdir(path) { out = run_command(git_cmd, &block) } 
+        else
+          out = run_command(git_cmd, &block)
         end
-              
-        if $?.exitstatus > 0
-          if $?.exitstatus == 1 && out == ''
-            return ''
-          end
-          raise Git::GitExecuteError.new(git_cmd + ':' + out.to_s) 
+      end
+      
+      if @logger
+        @logger.info(git_cmd)
+        @logger.debug(out)
+      end
+            
+      if $?.exitstatus > 0
+        if $?.exitstatus == 1 && out == ''
+          return ''
         end
+        raise Git::GitExecuteError.new(git_cmd + ':' + out.to_s) 
       end
       out
     end
@@ -745,6 +744,7 @@ module Git
         try_count+=1
         yield
       rescue => error
+        puts error
         if error.message.include? 'ssh_exchange_identification'
           retry unless try_count >= 10
         elsif error.message.include? "master.lock': File exists."
