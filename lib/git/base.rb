@@ -346,7 +346,7 @@ module Git
 
     # returns an array of all Git::Tag objects for this repository
     def tags
-      tags.map { |r| tag(r) }
+      self.lib.tags.map { |r| tag(r) }
     end
     
     # returns a Git::Tag object
