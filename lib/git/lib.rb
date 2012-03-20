@@ -721,8 +721,7 @@ module Git
     end
 
     def escape(s)
-      escaped = s.to_s.gsub('\'', '\'\\\'\'')
-      %Q{"#{escaped}"}
+      s.to_s.gsub('\'', '\'\\\'\'')
     end
     
     def git_environment(git_dir, git_index_file, git_work_tree)
