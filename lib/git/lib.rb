@@ -557,9 +557,8 @@ module Git
       command('tag', arr_opts)
     end
 
-    def pull(remote='origin', branch='master', opts=[])
-      opts << [remote, branch]
-      command('pull', opts.flatten)
+    def pull(remote='origin', branch='master', opts='')
+      command('pull', [opts, remote, branch].compact)
     end
     
     def fetch(remote)
